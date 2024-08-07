@@ -1,5 +1,6 @@
 package com.hami.identity_service.controller;
 
+import com.hami.identity_service.dto.request.ApiResponse;
 import com.hami.identity_service.dto.request.UserCreationRequest;
 import com.hami.identity_service.dto.request.UserUpdateRequest;
 import com.hami.identity_service.entity.User;
@@ -17,8 +18,10 @@ public class UserController {
     private UserService userService;
     
     @PostMapping
-    User createUser(@RequestBody @Valid UserCreationRequest request) {
-        return userService.create(request);
+    ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest request) {
+        ApiResponse<User> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.create(request));
+        return apiResponse;
     }
 
     @GetMapping
