@@ -1,6 +1,12 @@
 package com.hami.identity_service.exception;
 
-public class ErrorCode {
+public enum ErrorCode {
+    UNCATEGORIZED_EXCEPTION(9999, "Uncategorized Exception"),
+    USER_EXISTED(1001, "User existed"),
+    KEY_INVALID(1001, "Uncategorized Exception"),
+    USERNAME_INVALID(1003, "Username must be at least 3 characters"),
+    PASSWORD_INVALID(1004, "Password must be at least 8 characters");
+
     ErrorCode(int code, String message) {
         this.code = code;
         this.message = message;

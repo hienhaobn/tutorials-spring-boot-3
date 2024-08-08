@@ -3,6 +3,8 @@ package com.hami.identity_service.service;
 import com.hami.identity_service.dto.request.UserCreationRequest;
 import com.hami.identity_service.dto.request.UserUpdateRequest;
 import com.hami.identity_service.entity.User;
+import com.hami.identity_service.exception.AppException;
+import com.hami.identity_service.exception.ErrorCode;
 import com.hami.identity_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +20,7 @@ public class UserService {
         User user = new User();
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("User existed.");
+            throw new AppException(ErrorCode.USER_EXISTED);
         }
 
         user.setUsername(request.getUsername());
