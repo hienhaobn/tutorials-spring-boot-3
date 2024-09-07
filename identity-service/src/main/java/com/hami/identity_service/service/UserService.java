@@ -2,32 +2,39 @@ package com.hami.identity_service.service;
 
 import com.hami.identity_service.dto.request.UserCreationRequest;
 import com.hami.identity_service.dto.request.UserUpdateRequest;
+import com.hami.identity_service.dto.response.UserResponse;
 import com.hami.identity_service.entity.User;
 import com.hami.identity_service.exception.AppException;
 import com.hami.identity_service.exception.ErrorCode;
+import com.hami.identity_service.mapper.UserMapper;
 import com.hami.identity_service.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+// it will create a constructor that includes all variables start with "final" and inject it
+@RequiredArgsConstructor
+// it will create all variables with private that is final
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+// a variable final is constant variable
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
+    UserMapper userMapper;
 
     public User create(UserCreationRequest request) {
-        User user = new User();
-
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
 
-        user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setDob(request.getDob());
+        User user = userMapper.toUser(request);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         return userRepository.save(user);
     }
@@ -36,24 +43,22 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User update(String userId, UserUpdateRequest request) {
-        User user = getOne(userId);
+    public UserResponse update(String userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setDob(request.getDob());
+        userMapper.updateUser(user, request);
 
-        return userRepository.save(user);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
     public void delete(String userId) {
         userRepository.deleteById(userId);
     }
 
-    public User getOne(String id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found!"));
+    public UserResponse getOne(String id) {
+        return userMapper.toUserResponse(userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found!")));
     }
 
 }

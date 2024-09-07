@@ -5,11 +5,13 @@ server:
 
 spring:
   datasource:
-    url: "jdbc:mysql://localhost:13306/identity_service"
+    url: "jdbc:mysql://localhost:3306/identity_service"
     username: root
-    password: secret
+    password: root
 # only develop
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+jwt:
+  signerKey: "5odnAIYV9oaJ774PTcezPcSAnaRXe56jkk0tcbEg5NfgcydY1hzT40kHUJys/Gsj"
