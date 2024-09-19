@@ -12,12 +12,16 @@ import com.hami.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 // it will create a constructor that includes all variables start with "final" and inject it
@@ -45,8 +49,21 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    // todo: chặn trước khi vào method
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAll() {
         return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
+    }
+
+    public UserResponse getMyInfo() {
+        // khi user đăng nhập thành công thì thông tin đăng nhập được lưu trong SecurityContextHolder
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+
+        // chỉ đúng trong trường hợp username là duy nhất
+        User user = userRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return userMapper.toUserResponse(user);
     }
 
     public UserResponse update(String userId, UserUpdateRequest request) {
@@ -62,6 +79,9 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
+    // todo: vẫn vào method và chặn trước khi return giá trị
+    // method chỉ chạy khi lấy thông tin của chính mình
+    @PostAuthorize("returnObject.username == authentication.name")
     public UserResponse getOne(String id) {
         return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found!")));
