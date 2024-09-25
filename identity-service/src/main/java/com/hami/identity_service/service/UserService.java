@@ -8,6 +8,7 @@ import com.hami.identity_service.enums.Role;
 import com.hami.identity_service.exception.AppException;
 import com.hami.identity_service.exception.ErrorCode;
 import com.hami.identity_service.mapper.UserMapper;
+import com.hami.identity_service.repository.RoleRepository;
 import com.hami.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import java.util.Optional;
 // a variable final is constant variable
 public class UserService {
     UserRepository userRepository;
+    RoleRepository roleRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
 
@@ -71,6 +73,10 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
         userMapper.updateUser(user, request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        var roles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
 
         return userMapper.toUserResponse(userRepository.save(user));
     }

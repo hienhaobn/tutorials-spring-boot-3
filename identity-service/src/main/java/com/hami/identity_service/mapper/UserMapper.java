@@ -5,6 +5,7 @@ import com.hami.identity_service.dto.request.UserUpdateRequest;
 import com.hami.identity_service.dto.response.UserResponse;
 import com.hami.identity_service.entity.User;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
@@ -15,5 +16,6 @@ public interface UserMapper {
     //  @Mapping(target = "lastName", ignore = true)
     UserResponse toUserResponse(User user);
 
+    @Mapping(target = "roles", ignore = true)
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 }
