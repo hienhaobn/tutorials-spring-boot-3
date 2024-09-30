@@ -1,7 +1,8 @@
 package com.hami.identity_service.configuration;
 
+import com.hami.identity_service.constant.PredefineRole;
+import com.hami.identity_service.entity.Role;
 import com.hami.identity_service.entity.User;
-import com.hami.identity_service.enums.Role;
 import com.hami.identity_service.repository.RoleRepository;
 import com.hami.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 @Configuration
@@ -32,9 +34,22 @@ public class ApplicationInitConfig {
     @Bean
     ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository) {
         return args -> {
-            if(userRepository.findByUsername("admin").isEmpty()) {
-                var roles = new HashSet<String>();
-                roles.add(Role.ADMIN.name());
+            if (userRepository.findByUsername("admin").isEmpty()) {
+                // Tạo mặc định user role
+                roleRepository.save(Role.builder()
+                        .name(PredefineRole.USER_ROLE)
+                        .description("User role")
+                        .build());
+
+                // tạo mặc định account admin
+                Role adminRole = roleRepository.save(Role.builder()
+                        .name(PredefineRole.ADMIN_ROLE)
+                        .description("Admin role")
+                        .build());
+
+                var roles = new HashSet<Role>();
+                roles.add(adminRole);
+
                 User user = User.builder()
                         .username(ADMIN_USER_NAME)
                         .password(passwordEncoder.encode(ADMIN_PASSWORD))

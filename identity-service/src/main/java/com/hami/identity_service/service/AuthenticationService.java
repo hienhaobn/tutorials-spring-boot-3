@@ -7,6 +7,7 @@ import com.hami.identity_service.dto.response.IntrospectResponse;
 import com.hami.identity_service.entity.User;
 import com.hami.identity_service.exception.AppException;
 import com.hami.identity_service.exception.ErrorCode;
+import com.hami.identity_service.repository.RoleRepository;
 import com.hami.identity_service.repository.UserRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -37,6 +38,7 @@ import java.util.StringJoiner;
 public class AuthenticationService {
     private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
     UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @NonFinal
     // đọc value từ file yaml
@@ -111,8 +113,12 @@ public class AuthenticationService {
 
     private String buildScope(User user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
-//        if (!CollectionUtils.isEmpty(user.getRoles()))
-//            user.getRoles().forEach(stringJoiner::add);
+        if (!CollectionUtils.isEmpty(user.getRoles()))
+            user.getRoles().forEach(role -> {
+                stringJoiner.add(role.getName());
+                if (!CollectionUtils.isEmpty(role.getPermissions()))
+                    role.getPermissions().forEach(permission -> stringJoiner.add(permission.getName()));
+            });
 
         return stringJoiner.toString();
     }
